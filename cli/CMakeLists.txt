@@ -1,6 +1,9 @@
 # Instructions for building of the cppcheck command line executable
+find_package(TinyXML REQUIRED)
+
 set(CPPCHECK_CLI_SOURCES
     cppcheckexecutor.cpp
+    cmdlineparser.cpp
     threadexecutor.cpp
     main.cpp)
 

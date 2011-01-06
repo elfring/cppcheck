@@ -15,16 +15,22 @@ set(CPPCHECK_GUI_HEADERS
     aboutdialog.h
     applicationdialog.h
     applicationlist.h
+    checkstatistics.h
     checkthread.h
     common.h
     csvreport.h
+    erroritem.h
+    filelist.h
     fileviewdialog.h
     mainwindow.h
+    project.h
     projectfile.h
+    projectfiledialog.h
     report.h
     resultstree.h
     resultsview.h
     settingsdialog.h
+    statsdialog.h
     threadhandler.h
     threadresult.h
     translationhandler.h
@@ -36,16 +42,24 @@ set(CPPCHECK_GUI_SOURCES
     aboutdialog.cpp
     applicationdialog.cpp 
     applicationlist.cpp
+    checkstatistics.cpp
     checkthread.cpp
     csvreport.cpp
+    erroritem.cpp
+    filelist.cpp
     fileviewdialog.cpp
+    helpwindow.cpp
+    logview.cpp
     main.cpp
     mainwindow.cpp
+    project.cpp
     projectfile.cpp
+    projectfiledialog.cpp
     report.cpp
     resultstree.cpp
     resultsview.cpp
     settingsdialog.cpp
+    statsdialog.cpp
     threadhandler.cpp
     threadresult.cpp
     translationhandler.cpp
@@ -57,19 +71,26 @@ set(CPPCHECK_UIS
     about.ui
     application.ui
     file.ui
+    helpwindow.ui
+    logview.ui
     main.ui
+    projectfile.ui
     resultsview.ui
-    settings.ui)
+    settings.ui
+    stats.ui)
 
 # Translation files
 set(CPPCHECK_TRANS
     cppcheck_de.ts
-    cppcheck_fi.ts
-    cppcheck_pl.ts
-    cppcheck_se.ts
     cppcheck_en.ts
+    cppcheck_fi.ts
+    cppcheck_fr.ts
+    cppcheck_ja.ts
     cppcheck_nl.ts
-    cppcheck_ru.ts)
+    cppcheck_pl.ts
+    cppcheck_su.ts
+    cppcheck_se.ts
+    cppcheck_sr.ts)
 
 set(CPPCHECK_RCCS gui.qrc)
 

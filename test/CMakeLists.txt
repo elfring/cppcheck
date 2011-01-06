@@ -1,4 +1,6 @@
 # Instructions for building of the cppcheck test suite
+find_package(TinyXML REQUIRED)
+
 set(CPPCHECK_TEST_SOURCES
     options.cpp
     testautovariables.cpp
