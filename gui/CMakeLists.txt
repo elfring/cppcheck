@@ -2,6 +2,7 @@
 find_package(Qt4 REQUIRED)
 
 # Add needed Qt modules
+set(QT_USE_QTHELP TRUE)
 set(QT_USE_QTMAIN TRUE)
 set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
@@ -22,6 +23,8 @@ set(CPPCHECK_GUI_HEADERS
     erroritem.h
     filelist.h
     fileviewdialog.h
+    helpwindow.h
+    logview.h
     mainwindow.h
     project.h
     projectfile.h
