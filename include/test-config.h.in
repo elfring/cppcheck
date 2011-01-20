@@ -1,0 +1,12 @@
+/*
+This is a header file template which will be integrated into the software
+generation process by the corresponding build tool.
+
+Copyright: See COPYING file that comes with this distribution.
+*/
+#ifndef CPPCHECK_TEST_CONFIG_H_5F9585DE5894499A8E6B2BF1D0B0C2B5
+#define CPPCHECK_TEST_CONFIG_H_5F9585DE5894499A8E6B2BF1D0B0C2B5
+
+#include "top-config.h"   // System settings from the main build configuration
+
+#endif
