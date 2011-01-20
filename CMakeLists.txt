@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(CPPCHECK)
-set(CMAKE_MODULE_PATH ${CPPCHECK_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CPPCHECK_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 add_subdirectory(cli)
 add_subdirectory(gui)
@@ -20,4 +20,3 @@ if(MSVC_IDE)
 else()
    add_subdirectory(test EXCLUDE_FROM_ALL)
 endif()
-
