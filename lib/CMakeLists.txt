@@ -6,8 +6,7 @@ set(CPPCHECK_LIB_DIR "")
 include(library_sources.txt)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-   set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}
-       "-Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
 endif()
 
 add_library(checks SHARED ${CPPCHECK_LIB_SOURCES})
