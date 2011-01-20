@@ -1,4 +1,5 @@
 # Instructions for building of the cppcheck test suite
+find_package(PCRE REQUIRED)
 find_package(TinyXML REQUIRED)
 
 set(CPPCHECK_TEST_SOURCES
@@ -38,18 +39,15 @@ set(CPPCHECK_TEST_SOURCES
 
 if(1)
    if(1)
-      find_package(PCRE REQUIRED)
-      include_directories("${PCRE_INCLUDE_DIR}")
-
       set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
       include("${CPPCHECK_LIB_DIR}library_sources.txt")
       set(CPPCHECK_TEST_SOURCES ${CPPCHECK_TEST_SOURCES} ${CPPCHECK_LIB_SOURCES})
       set(CPPCHECK_TEST_LINK_LIBRARIES ${PCRE_LIBRARIES})
    else()
-      set(CPPCHECK_TEST_LINK_LIBRARIES libchecks)   # static approach
+      set(CPPCHECK_TEST_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
    endif()
 else()
-   set(CPPCHECK_TEST_LINK_LIBRARIES checks)   # shared approach
+   set(CPPCHECK_TEST_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
 endif()
 
 if(WIN32 AND NOT CYGWIN)
@@ -61,7 +59,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
 endif()
 
-include_directories("${CPPCHECK_SOURCE_DIR}/lib")
+include_directories("${CPPCHECK_SOURCE_DIR}/lib" "${PCRE_INCLUDE_DIR}")
 add_executable(test ${CPPCHECK_TEST_SOURCES})
 target_link_libraries(test ${CPPCHECK_TEST_LINK_LIBRARIES})
 
@@ -69,4 +67,3 @@ target_link_libraries(test ${CPPCHECK_TEST_LINK_LIBRARIES})
 # It compiles and runs tests
 add_custom_target(check COMMAND test)
 add_dependencies(check test)
-

@@ -1,4 +1,5 @@
 # Instructions for building of the cppcheck Qt GUI
+find_package(PCRE REQUIRED)
 find_package(Qt4 REQUIRED)
 
 # Add needed Qt modules
@@ -11,7 +12,8 @@ include_directories("${CPPCHECK_SOURCE_DIR}/lib"
 # Generated files (in build directory) need to know gui directory
                     "${CPPCHECK_SOURCE_DIR}/gui"
 # Include binary directory where code from UI files gets created
-                    "${CMAKE_CURRENT_BINARY_DIR}")
+                    "${CMAKE_CURRENT_BINARY_DIR}"
+                    "${PCRE_INCLUDE_DIR}")
 
 # Header files - listed for mocking
 set(CPPCHECK_GUI_HEADERS
@@ -101,18 +103,15 @@ set(CPPCHECK_RCCS "gui.qrc")
 
 if(1)
    if(1)
-      find_package(PCRE REQUIRED)
-      include_directories("${PCRE_INCLUDE_DIR}")
-
       set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
       include("${CPPCHECK_LIB_DIR}library_sources.txt")
       set(CPPCHECK_GUI_SOURCES ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_LIB_SOURCES})
       set(CPPCHECK_GUI_LINK_LIBRARIES ${PCRE_LIBRARIES})
    else()
-      set(CPPCHECK_GUI_LINK_LIBRARIES libchecks)   # static approach
+      set(CPPCHECK_GUI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
    endif()
 else()
-   set(CPPCHECK_GUI_LINK_LIBRARIES checks)   # shared approach
+   set(CPPCHECK_GUI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
 endif()
 
 if(WIN32)
