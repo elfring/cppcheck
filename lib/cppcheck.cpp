@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "library_version.h"
 #include "cppcheck.h"
 
 #include "preprocessor.h" // preprocessor.
@@ -73,7 +74,9 @@ void CppCheck::clearFiles()
 
 const char * CppCheck::version()
 {
-    return "1.46";
+    return CPPCHECK_LIBRARY_VERSION_STRING(CPPCHECK_LIBRARY_VERSION_MAJOR,
+                                           CPPCHECK_LIBRARY_VERSION_MINOR,
+                                           CPPCHECK_LIBRARY_VERSION_PATCH);
 }
 
 unsigned int CppCheck::check()
