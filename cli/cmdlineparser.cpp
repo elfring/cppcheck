@@ -26,8 +26,10 @@
 #include "settings.h"
 #include "cmdlineparser.h"
 
+#ifndef NDEBUG
 // xml is used in rules
 #include "tinyxml/tinyxml.h"
+#endif
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
