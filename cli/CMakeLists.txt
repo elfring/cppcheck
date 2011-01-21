@@ -1,6 +1,5 @@
 # Instructions for building of the cppcheck command line executable
 find_package(PCRE REQUIRED)
-find_package(TinyXML REQUIRED)
 
 configure_file("${CPPCHECK_SOURCE_DIR}/include/cli-config.h.in" "${CPPCHECK_BINARY_DIR}/include/cli-config.h")
 
@@ -9,6 +8,31 @@ set(CPPCHECK_CLI_SOURCES
     "cmdlineparser.cpp"
     "threadexecutor.cpp"
     "main.cpp")
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} up)
+
+# Is this auxiliary library needed by the command line tool?
+if(NOT("${CMAKE_CXX_FLAGS_${up}} ${CMAKE_CXX_FLAGS}" MATCHES "[-/][Dd][ \t]*['\"]*NDEBUG"))
+   set(CPPCHECK_CLI_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML 0 CACHE BOOL
+    "The TinyXML software should be linked in from an external library file.
+(The source files that are bundled with Cppcheck should not be used.)")
+   mark_as_advanced(CPPCHECK_CLI_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML)
+
+   if(CPPCHECK_CLI_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML)
+      find_package(TinyXML REQUIRED)
+      target_link_libraries(cppcheck ${TINYXML_LIBRARIES})
+   else()
+      set(CPPCHECK_CLI_TinyXML_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
+      set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES}
+          "${CPPCHECK_CLI_TinyXML_DIR}tinystr.cpp"
+          "${CPPCHECK_CLI_TinyXML_DIR}tinyxml.cpp"
+          "${CPPCHECK_CLI_TinyXML_DIR}tinyxmlerror.cpp"
+          "${CPPCHECK_CLI_TinyXML_DIR}tinyxmlparser.cpp")
+      set(TINYXML_INCLUDE_DIR "${CPPCHECK_CLI_TinyXML_DIR}")
+   endif()
+
+   include_directories("${TINYXML_INCLUDE_DIR}")
+endif()
 
 if(1)
    if(1)

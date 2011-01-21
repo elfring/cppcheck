@@ -1,6 +1,5 @@
 # Instructions for building of the cppcheck test suite
 find_package(PCRE REQUIRED)
-find_package(TinyXML REQUIRED)
 
 configure_file("${CPPCHECK_SOURCE_DIR}/include/test-config.h.in" "${CPPCHECK_BINARY_DIR}/include/test-config.h")
 
@@ -42,6 +41,24 @@ set(CPPCHECK_TEST_SOURCES
     "testunusedprivfunc.cpp"
     "testunusedvar.cpp")
 
+set(CPPCHECK_TEST_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML 0 CACHE BOOL
+    "The TinyXML software should be linked in from an external library file.
+(The source files that are bundled with Cppcheck should not be used.)")
+mark_as_advanced(CPPCHECK_TEST_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML)
+
+if(CPPCHECK_TEST_BUILD_USE_EXTERNAL_LINKING_FOR_TinyXML)
+   find_package(TinyXML REQUIRED)
+   target_link_libraries(cppcheck ${TINYXML_LIBRARIES})
+else()
+   set(CPPCHECK_TEST_TinyXML_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
+   set(CPPCHECK_TEST_SOURCES ${CPPCHECK_TEST_SOURCES}
+       "${CPPCHECK_TEST_TinyXML_DIR}tinystr.cpp"
+       "${CPPCHECK_TEST_TinyXML_DIR}tinyxml.cpp"
+       "${CPPCHECK_TEST_TinyXML_DIR}tinyxmlerror.cpp"
+       "${CPPCHECK_TEST_TinyXML_DIR}tinyxmlparser.cpp")
+   set(TINYXML_INCLUDE_DIR "${CPPCHECK_TEST_TinyXML_DIR}")
+endif()
+
 if(1)
    if(1)
       set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
@@ -66,6 +83,7 @@ endif()
 
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${CPPCHECK_SOURCE_DIR}/cli"
+                    "${TINYXML_INCLUDE_DIR}"
                     "${PCRE_INCLUDE_DIR}")
 add_executable(test ${CPPCHECK_TEST_SOURCES})
 target_link_libraries(test ${CPPCHECK_TEST_LINK_LIBRARIES})
