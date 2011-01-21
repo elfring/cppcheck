@@ -20,6 +20,10 @@
 // Buffer overrun..
 //---------------------------------------------------------------------------
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "library-config.h"   // System settings from the build configuration
+#endif
+
 #include "checkbufferoverrun.h"
 
 #include "tokenize.h"

@@ -20,6 +20,9 @@
 // The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "test-config.h"   // System settings from the build configuration
+#endif
 
 #include "testsuite.h"
 #include "preprocessor.h"

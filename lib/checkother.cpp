@@ -18,6 +18,10 @@
 
 
 //---------------------------------------------------------------------------
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "library-config.h"   // System settings from the build configuration
+#endif
+
 #include "checkother.h"
 #include "mathlib.h"
 

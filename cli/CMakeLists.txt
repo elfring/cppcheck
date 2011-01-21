@@ -2,6 +2,8 @@
 find_package(PCRE REQUIRED)
 find_package(TinyXML REQUIRED)
 
+configure_file("${CPPCHECK_SOURCE_DIR}/include/cli-config.h.in" "${CPPCHECK_BINARY_DIR}/include/cli-config.h")
+
 set(CPPCHECK_CLI_SOURCES
     "cppcheckexecutor.cpp"
     "cmdlineparser.cpp"

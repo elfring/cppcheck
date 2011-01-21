@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "cli-config.h"   // System settings from the build configuration
+#endif
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -28,7 +32,11 @@
 
 #ifndef NDEBUG
 // xml is used in rules
-#include "tinyxml/tinyxml.h"
+ #ifdef CPPCHECK_BUILD_VERSION_MAJOR
+  #include "tinyxml.h"
+ #else
+  #include "tinyxml/tinyxml.h"
+ #endif
 #endif
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)

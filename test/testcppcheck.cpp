@@ -20,6 +20,9 @@
 // The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "test-config.h"   // System settings from the build configuration
+#endif
 
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -32,7 +35,11 @@
 #include <stdexcept>
 
 // use tinyxml with STL
-#include "tinyxml/tinyxml.h"
+#ifdef CPPCHECK_BUILD_VERSION_MAJOR
+ #include "tinyxml.h"
+#else
+ #include "tinyxml/tinyxml.h"
+#endif
 
 extern std::ostringstream errout;
 extern std::ostringstream output;

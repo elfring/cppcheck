@@ -22,6 +22,10 @@
 #pragma warning(disable: 4503)
 #endif
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "library-config.h"   // System settings from the build configuration
+#endif
+
 #include "tokenize.h"
 #include "token.h"
 #include "filelister.h"

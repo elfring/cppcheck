@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "test-config.h"   // System settings from the build configuration
+#endif
+
 #include "options.h"
 #include "testsuite.h"
 #include <sstream>

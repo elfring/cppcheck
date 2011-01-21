@@ -20,6 +20,9 @@
 
 // Check for unused variables..
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "test-config.h"   // System settings from the build configuration
+#endif
 
 #include "testsuite.h"
 #include "tokenize.h"

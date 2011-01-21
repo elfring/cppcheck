@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "gui-config.h"   // System settings from the build configuration
+#endif
+
 #include <QStringList>
 #include <QFileInfo>
 #include <QObject>

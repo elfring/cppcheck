@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef CPPCHECK_LIBRARY_VERSION_H_F844618C72C64C11B739E6759CC90245
 #define CPPCHECK_LIBRARY_VERSION_H_F844618C72C64C11B739E6759CC90245
 

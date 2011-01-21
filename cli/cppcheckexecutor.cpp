@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "cli-config.h"   // System settings from the build configuration
+#endif
+
 #include "cppcheckexecutor.h"
 #include "cppcheck.h"
 #include "threadexecutor.h"

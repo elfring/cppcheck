@@ -2,7 +2,12 @@
 find_package(PCRE REQUIRED)
 find_package(TinyXML REQUIRED)
 
+configure_file("${CPPCHECK_SOURCE_DIR}/include/test-config.h.in" "${CPPCHECK_BINARY_DIR}/include/test-config.h")
+
 set(CPPCHECK_TEST_SOURCES
+    "${CPPCHECK_SOURCE_DIR}/cli/cppcheckexecutor.cpp"
+    "${CPPCHECK_SOURCE_DIR}/cli/cmdlineparser.cpp"
+    "${CPPCHECK_SOURCE_DIR}/cli/threadexecutor.cpp"
     "options.cpp"
     "testautovariables.cpp"
     "testbufferoverrun.cpp"
@@ -59,7 +64,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wshadow -Wno-long-long -Wfloat-equal -Wcast-qual")
 endif()
 
-include_directories("${CPPCHECK_SOURCE_DIR}/lib" "${PCRE_INCLUDE_DIR}")
+include_directories("${CPPCHECK_SOURCE_DIR}/lib"
+                    "${CPPCHECK_SOURCE_DIR}/cli"
+                    "${PCRE_INCLUDE_DIR}")
 add_executable(test ${CPPCHECK_TEST_SOURCES})
 target_link_libraries(test ${CPPCHECK_TEST_LINK_LIBRARIES})
 

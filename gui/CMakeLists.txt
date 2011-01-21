@@ -8,6 +8,8 @@ set(QT_USE_QTMAIN TRUE)
 set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
 
+configure_file("${CPPCHECK_SOURCE_DIR}/include/gui-config.h.in" "${CPPCHECK_BINARY_DIR}/include/gui-config.h")
+
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
 # Generated files (in build directory) need to know gui directory
                     "${CPPCHECK_SOURCE_DIR}/gui"

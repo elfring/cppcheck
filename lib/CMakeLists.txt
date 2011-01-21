@@ -2,6 +2,8 @@
 find_package(PCRE REQUIRED)
 include_directories("${PCRE_INCLUDE_DIR}")
 
+configure_file("${CPPCHECK_SOURCE_DIR}/include/library-config.h.in" "${CPPCHECK_BINARY_DIR}/include/library-config.h")
+
 set(CPPCHECK_LIB_DIR "")
 include("library_sources.txt")
 

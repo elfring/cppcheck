@@ -20,6 +20,9 @@
 // Check for dangerous division..
 // such as "svar / uvar". Treating "svar" as unsigned data is not good
 
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "test-config.h"   // System settings from the build configuration
+#endif
 
 #include "tokenize.h"
 #include "checkother.h"

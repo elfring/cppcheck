@@ -17,6 +17,10 @@
  */
 
 //---------------------------------------------------------------------------
+#ifdef CPPCHECK_BUILD_USE_CONFIGURATION_HEADER
+ #include "library-config.h"   // System settings from the build configuration
+#endif
+
 #include "checkclass.h"
 
 #include "tokenize.h"
