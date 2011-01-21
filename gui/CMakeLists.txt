@@ -103,17 +103,27 @@ set(CPPCHECK_TRANS
 
 set(CPPCHECK_RCCS "gui.qrc")
 
-if(1)
-   if(1)
-      set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
-      include("${CPPCHECK_LIB_DIR}library_sources.txt")
-      set(CPPCHECK_GUI_SOURCES ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_LIB_SOURCES})
-      set(CPPCHECK_GUI_LINK_LIBRARIES ${PCRE_LIBRARIES})
-   else()
-      set(CPPCHECK_GUI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
-   endif()
+option(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE
+       "The source files of Cppchecks's library should be directly included
+for the compilation of the graphical user interface.")
+mark_as_advanced(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+
+if(CPPCHECK_GUI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+   set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+   include("${CPPCHECK_LIB_DIR}library_sources.txt")
+   set(CPPCHECK_GUI_SOURCES ${CPPCHECK_GUI_SOURCES} ${CPPCHECK_LIB_SOURCES})
+   set(CPPCHECK_GUI_LINK_LIBRARIES ${PCRE_LIBRARIES})
 else()
-   set(CPPCHECK_GUI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
+   option(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY
+          "The static library file that was generated for Cppchecks's class library should be
+used for the link step of the graphical user interface.")
+   mark_as_advanced(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+
+   if(CPPCHECK_GUI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+      set(CPPCHECK_GUI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
+   else()
+      set(CPPCHECK_GUI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
+   endif()
 endif()
 
 if(WIN32)

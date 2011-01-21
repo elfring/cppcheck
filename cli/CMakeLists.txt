@@ -9,17 +9,27 @@ set(CPPCHECK_CLI_SOURCES
     "threadexecutor.cpp"
     "main.cpp")
 
-if(1)
-   if(1)
-      set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
-      include("${CPPCHECK_LIB_DIR}library_sources.txt")
-      set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} ${CPPCHECK_LIB_SOURCES})
-      set(CPPCHECK_CLI_LINK_LIBRARIES ${PCRE_LIBRARIES})
-   else()
-      set(CPPCHECK_CLI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
-   endif()
+option(CPPCHECK_CLI_BUILD_EMBED_LIBRARY_SOURCE_CODE
+       "The source files of Cppchecks's library should be directly included
+for the compilation of the command line interface.")
+mark_as_advanced(CPPCHECK_CLI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+
+if(CPPCHECK_CLI_BUILD_EMBED_LIBRARY_SOURCE_CODE)
+   set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+   include("${CPPCHECK_LIB_DIR}library_sources.txt")
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES} ${CPPCHECK_LIB_SOURCES})
+   set(CPPCHECK_CLI_LINK_LIBRARIES ${PCRE_LIBRARIES})
 else()
-   set(CPPCHECK_CLI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
+   option(CPPCHECK_CLI_BUILD_USE_STATICALLY_LINKED_LIBRARY
+          "The static library file that was generated for Cppchecks's class library should be
+used for the link step of the command line interface.")
+   mark_as_advanced(CPPCHECK_CLI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+
+   if(CPPCHECK_CLI_BUILD_USE_STATICALLY_LINKED_LIBRARY)
+      set(CPPCHECK_CLI_LINK_LIBRARIES libchecks ${PCRE_LIBRARIES})   # static approach
+   else()
+      set(CPPCHECK_CLI_LINK_LIBRARIES checks ${PCRE_LIBRARIES})   # shared approach
+   endif()
 endif()
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} up)
