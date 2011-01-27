@@ -6,6 +6,7 @@ configure_file("${CPPCHECK_SOURCE_DIR}/include/test-config.h.in" "${CPPCHECK_BIN
 set(CPPCHECK_TEST_SOURCES
     "${CPPCHECK_SOURCE_DIR}/cli/cppcheckexecutor.cpp"
     "${CPPCHECK_SOURCE_DIR}/cli/cmdlineparser.cpp"
+    "${CPPCHECK_SOURCE_DIR}/cli/filelister.cpp"
     "${CPPCHECK_SOURCE_DIR}/cli/threadexecutor.cpp"
     "options.cpp"
     "testautovariables.cpp"
@@ -40,6 +41,14 @@ set(CPPCHECK_TEST_SOURCES
     "testunusedfunctions.cpp"
     "testunusedprivfunc.cpp"
     "testunusedvar.cpp")
+
+if(WIN32)
+   set(CPPCHECK_TEST_SOURCES ${CPPCHECK_TEST_SOURCES}
+       "${CPPCHECK_SOURCE_DIR}/cli/filelister_win32.cpp")
+else()
+   set(CPPCHECK_TEST_SOURCES ${CPPCHECK_TEST_SOURCES}
+       "${CPPCHECK_SOURCE_DIR}/cli/filelister_unix.cpp")
+endif()
 
 option(CPPCHECK_TEST_BUILD_EMBED_LIBRARY_SOURCE_CODE
        "The source files of Cppchecks's library should be directly included

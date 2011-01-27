@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FileListerWin32H
-#define FileListerWin32H
+#ifndef FileListerUnixH
+#define FileListerUnixH
 
 #include <vector>
 #include <string>
@@ -27,15 +27,14 @@
 /// @{
 
 
-class FileListerWin32 : public FileLister
+class FileListerUnix : public FileLister
 {
 public:
     virtual void recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path);
-    virtual bool sameFileName(const std::string &fname1, const std::string &fname2);
 private:
 
 };
 
 /// @}
 
-#endif // #ifndef FileListerWin32H
+#endif // #ifndef FileListerUnixH

@@ -6,8 +6,17 @@ configure_file("${CPPCHECK_SOURCE_DIR}/include/cli-config.h.in" "${CPPCHECK_BINA
 set(CPPCHECK_CLI_SOURCES
     "cppcheckexecutor.cpp"
     "cmdlineparser.cpp"
+    "filelister.cpp"
     "threadexecutor.cpp"
     "main.cpp")
+
+if(WIN32)
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES}
+       "filelister_win32.cpp")
+else()
+   set(CPPCHECK_CLI_SOURCES ${CPPCHECK_CLI_SOURCES}
+       "filelister_unix.cpp")
+endif()
 
 option(CPPCHECK_CLI_BUILD_EMBED_LIBRARY_SOURCE_CODE
        "The source files of Cppchecks's library should be directly included
