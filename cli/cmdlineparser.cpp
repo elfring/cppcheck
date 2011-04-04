@@ -30,7 +30,7 @@
 
 #ifdef HAVE_RULES
 // xml is used in rules
-#include <tinyxml.h>
+#include "tinyxml.h"
 #endif
 
 static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)

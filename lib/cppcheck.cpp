@@ -32,7 +32,7 @@
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
-#include <pcre.h>
+#include "pcre.h"
 #endif
 
 static TimerResults S_timerResults;
