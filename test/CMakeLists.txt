@@ -1,4 +1,4 @@
-# Minimal CMake build file to build cppcheck test suite
+# CMake build file to build cppcheck test suite
 
 set(TINYXML_INCLUDE_DIR "${CPPCHECK_SOURCE_DIR}/externals/tinyxml/")
 
@@ -49,8 +49,27 @@ SET(CHECKTEST_SRCS
   "${TINYXML_INCLUDE_DIR}tinyxmlerror.cpp"
   "${TINYXML_INCLUDE_DIR}tinyxmlparser.cpp")
 
-set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
-include("${CPPCHECK_LIB_DIR}library_sources.cmake")
+option(CPPCHECK_TEST_BUILD_WITH_STATIC_BINDING
+       "The object code of Cppchecks's library should be included for the
+test suite in a static way.")
+mark_as_advanced(CPPCHECK_TEST_BUILD_WITH_STATIC_BINDING)
+
+if(CPPCHECK_TEST_BUILD_WITH_STATIC_BINDING)
+   option(CPPCHECK_TEST_BUILD_USE_STATIC_LIBRARY
+          "The static library file that will be generated for Cppchecks's class library
+should be used for the link step of the test suite.")
+   mark_as_advanced(CPPCHECK_TEST_BUILD_USE_STATIC_LIBRARY)
+
+   if(CPPCHECK_TEST_BUILD_USE_STATIC_LIBRARY)
+      set(CHECK_LIBS static_checks)
+   else()
+      set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+      include("${CPPCHECK_LIB_DIR}library_sources.cmake")
+      set(CHECKTEST_SRCS ${CHECKTEST_SRCS} ${CPPCHECK_LIB_SOURCES})
+   endif()
+else()
+   set(CHECK_LIBS checks)
+endif()
 
 if(WIN32)
    if(NOT CYGWIN)
@@ -66,7 +85,7 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 include_directories("${CPPCHECK_SOURCE_DIR}/lib"
                     "${CPPCHECK_SOURCE_DIR}/cli"
                     "${TINYXML_INCLUDE_DIR}")
-add_executable(test ${CHECKTEST_SRCS} ${CPPCHECK_LIB_SOURCES})
+add_executable(test ${CHECKTEST_SRCS})
 TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
 # Add custom 'make check' -target

@@ -1,4 +1,4 @@
-# Minimal CMake build file to build cppcheck Qt GUI
+# CMake build file to build cppcheck Qt GUI
 
 # find and setup Qt4 for this project
 find_package(Qt4)
@@ -111,8 +111,27 @@ SET(CHECK_TRANS
 
 SET(CHECK_RCCS gui.qrc)
 
-set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
-include("${CPPCHECK_LIB_DIR}library_sources.cmake")
+option(CPPCHECK_GUI_BUILD_WITH_STATIC_BINDING
+       "The object code of Cppchecks's library should be included for the
+graphical user interface in a static way.")
+mark_as_advanced(CPPCHECK_GUI_BUILD_WITH_STATIC_BINDING)
+
+if(CPPCHECK_GUI_BUILD_WITH_STATIC_BINDING)
+   option(CPPCHECK_GUI_BUILD_USE_STATIC_LIBRARY
+          "The static library file that will be generated for Cppchecks's class library
+should be used for the link step of the graphical user interface.")
+   mark_as_advanced(CPPCHECK_GUI_BUILD_USE_STATIC_LIBRARY)
+
+   if(CPPCHECK_GUI_BUILD_USE_STATIC_LIBRARY)
+      set(CHECK_LIBS static_checks)
+   else()
+      set(CPPCHECK_LIB_DIR "${CPPCHECK_SOURCE_DIR}/lib/")
+      include("${CPPCHECK_LIB_DIR}library_sources.cmake")
+      set(CHECKGUI_SRCS ${CHECKGUI_SRCS} ${CPPCHECK_LIB_SOURCES})
+   endif()
+else()
+   set(CHECK_LIBS checks)
+endif()
 
 if(WIN32)
    # Add Windows resource file
@@ -146,7 +165,7 @@ SOURCE_GROUP("Ui Files" ".ui$")
 SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 
 ADD_EXECUTABLE(cppcheck-gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
-               ${CHECK_UIS_H} ${CHECK_RCC_SRCS} ${CPPCHECK_LIB_SOURCES})
+               ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
 TARGET_LINK_LIBRARIES(cppcheck-gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)
