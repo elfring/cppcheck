@@ -73,3 +73,5 @@ TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 # It compiles and runs tests
 add_custom_target(check COMMAND test)
 add_dependencies(check test)
+
+add_test(test1 "${EXECUTABLE_OUTPUT_PATH}/test")

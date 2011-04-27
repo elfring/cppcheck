@@ -29,14 +29,7 @@ endif()
 # ADD_SUBDIRECTORY(lib)
 
 ADD_SUBDIRECTORY(cli)
-
-# Exclude tests from command line targets but include them to VS IDE targets.
-# There is 'make check' -target for compiling and running tests from
-# command line.
-IF (MSVC_IDE)
-  ADD_SUBDIRECTORY(test)
-ELSE (MSVC_IDE)
-  ADD_SUBDIRECTORY(test EXCLUDE_FROM_ALL)
-ENDIF (MSVC_IDE)
-
 ADD_SUBDIRECTORY(gui)
+
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(test)
