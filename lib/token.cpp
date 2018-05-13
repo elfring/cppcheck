@@ -600,6 +600,93 @@ const char *Token::chrInFirstWord(const char *str, char c)
     }
 }
 
+bool Token::Match(const Token *tok, const char pattern[])
+{
+    const char *p = pattern;
+    while (*p) {
+        // Skip spaces in pattern..
+        while (*p == ' ')
+            ++p;
+
+        // No token => Success!
+        if (*p == '\0')
+            break;
+
+        if (!tok) {
+            // If we have no tokens, pattern "!!else" should return true
+            if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
+                while (*p && *p != ' ')
+                    ++p;
+                continue;
+            } else
+                return false;
+        }
+
+        // [.. => search for a one-character token..
+        if (p[0] == '[' && chrInFirstWord(p, ']')) {
+            if (tok->str().length() != 1)
+                return false;
+
+            const char *temp = p+1;
+            bool chrFound = false;
+            unsigned int count = 0;
+            while (*temp && *temp != ' ') {
+                if (*temp == ']') {
+                    ++count;
+                }
+
+                else if (*temp == tok->str()[0]) {
+                    chrFound = true;
+                    break;
+                }
+
+                ++temp;
+            }
+
+            if (count > 1 && tok->str()[0] == ']')
+                chrFound = true;
+
+            if (!chrFound)
+                return false;
+
+            p = temp;
+            while (*p && *p != ' ')
+                ++p;
+        }
+
+        // Parse "not" options. Token can be anything except the given one
+        else if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
+            p += 2;
+            if (firstWordEquals(p, tok->str().c_str()))
+                return false;
+            while (*p && *p != ' ')
+                ++p;
+        }
+
+        // Parse multi options, such as void|int|char (accept token which is one of these 3)
+        else {
+            const int res = multiCompare(tok, p, 0);
+            if (res == 0) {
+                // Empty alternative matches, use the same token on next round
+                while (*p && *p != ' ')
+                    ++p;
+                continue;
+            } else if (res == -1) {
+                // No match
+                return false;
+            }
+        }
+
+        while (*p && *p != ' ')
+            ++p;
+
+        tok = tok->next();
+    }
+
+    // The end of the pattern has been reached and nothing wrong has been found
+    return true;
+}
+
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;

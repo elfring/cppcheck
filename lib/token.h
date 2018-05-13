@@ -191,7 +191,8 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
+    static bool Match(const Token *tok, const char pattern[], unsigned int varid);
+    static bool Match(const Token *tok, const char pattern[]);
 
     /**
      * @return length of C-string.
