@@ -314,13 +314,14 @@ protected:
     */
     QString stripPath(const QString &path, bool saving) const;
 
-
+#ifndef USE_ANALYSIS_RESULTS_MODEL
     /**
     * @brief Save all errors under specified item
     * @param report Report that errors are saved to
     * @param fileItem Item whose errors to save
     */
-    void saveErrors(Report *report, QStandardItem *fileItem) const;
+    void saveErrors(Report& report, QStandardItem const * fileItem) const;
+#endif
 
     /**
     * @brief Convert a severity string to a icon filename
@@ -450,12 +451,6 @@ protected:
     * @return QStandardItem to be used as a parent for all errors for specified file
     */
     QStandardItem *ensureFileItem(const QString &fullpath, const QString &file0, bool hide);
-
-    /**
-    * @brief Item model for tree
-    *
-    */
-    QStandardItemModel mModel;
 
     /**
     * @brief Program settings

@@ -7,8 +7,7 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-QT += widgets
-QT += printsupport
+QT += core gui widgets printsupport
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
@@ -85,9 +84,11 @@ contains(LINKCORE, [yY][eE][sS]) {
 }
 
 HEADERS += aboutdialog.h \
+           app.h \
            application.h \
            applicationdialog.h \
            applicationlist.h \
+           analysis_results_model.h \
            checkstatistics.h \
            checkthread.h \
            codeeditor.h \
@@ -121,9 +122,11 @@ HEADERS += aboutdialog.h \
            newsuppressiondialog.h
 
 SOURCES += aboutdialog.cpp \
+           app.cpp \
            application.cpp \
            applicationdialog.cpp \
            applicationlist.cpp \
+           analysis_results_model.cpp \
            checkstatistics.cpp \
            checkthread.cpp \
            codeeditor.cpp \

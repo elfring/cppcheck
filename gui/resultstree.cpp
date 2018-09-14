@@ -48,6 +48,8 @@
 #include "threadhandler.h"
 #include "path.h"
 #include "xmlreportv2.h"
+#include "analysis_results_model.h"
+#include "app.h"
 
 // These must match column headers given in ResultsTree::translate()
 static const unsigned int COLUMN_SINCE_DATE = 6;
@@ -68,7 +70,9 @@ ResultsTree::ResultsTree(QWidget * parent) :
     mShowCppcheck(true),
     mShowClang(true)
 {
-    setModel(&mModel);
+    auto gui(static_cast<analysis::GUI::application *>(qApp));
+//    setModel(gui->get_analysis_results_model());
+    setModel(gui->get_standard_item_model());
     translate(); // Adds columns to grid
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
@@ -323,35 +327,40 @@ QStandardItem *ResultsTree::findFileItem(const QString &name) const
     // The first column contains the file name. In Windows we can get filenames
     // "header.h" and "Header.h" and must compare them as identical.
 
-    for (int i = 0; i < mModel.rowCount(); i++) {
+//     auto m(static_cast<analysis::results_model const *>(model()));
+    auto m(qobject_cast<QStandardItemModel const *>(model()));
+    for (int i = 0; i < m->rowCount(); i++) {
+        auto x(m->item(i));
 #ifdef _WIN32
-        if (QString::compare(mModel.item(i, 0)->text(), name, Qt::CaseInsensitive) == 0)
+        if (QString::compare(x->text(), name, Qt::CaseInsensitive) == 0)
 #else
-        if (mModel.item(i, 0)->text() == name)
+        if (x->text() == name)
 #endif
-            return mModel.item(i, 0);
+            return x;
     }
     return 0;
 }
 
 void ResultsTree::clear()
 {
-    mModel.removeRows(0, mModel.rowCount());
+    model()->removeRows(0, model()->rowCount());
 }
 
 void ResultsTree::clear(const QString &filename)
 {
     const QString stripped = stripPath(filename, false);
+//     auto & m(* static_cast<analysis::results_model *>(model()));
+    auto & m(* qobject_cast<QStandardItemModel*>(model()));
 
-    for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *fileItem = mModel.item(i, 0);
+    for (int i = 0; i < m.rowCount(); ++i) {
+        auto const fileItem(m.item(i));
         if (!fileItem)
             continue;
 
         QVariantMap data = fileItem->data().toMap();
         if (stripped == data["file"].toString() ||
             filename == data["file0"].toString()) {
-            mModel.removeRow(i);
+            m.removeRow(i);
             break;
         }
     }
@@ -359,8 +368,10 @@ void ResultsTree::clear(const QString &filename)
 
 void ResultsTree::clearRecheckFile(const QString &filename)
 {
-    for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *fileItem = mModel.item(i, 0);
+//     auto & m(* static_cast<analysis::results_model *>(model()));
+    auto & m(* qobject_cast<QStandardItemModel*>(model()));
+    for (int i = 0; i < m.rowCount(); ++i) {
+        auto const fileItem(m.item(i));
         if (!fileItem)
             continue;
 
@@ -369,7 +380,7 @@ void ResultsTree::clearRecheckFile(const QString &filename)
         QString storedfile = data["file"].toString();
         storedfile = ((!mCheckPath.isEmpty() && storedfile.startsWith(mCheckPath)) ? storedfile.mid(mCheckPath.length() + 1) : storedfile);
         if (actualfile == storedfile) {
-            mModel.removeRow(i);
+            m.removeRow(i);
             break;
         }
     }
@@ -378,9 +389,10 @@ void ResultsTree::clearRecheckFile(const QString &filename)
 
 void ResultsTree::loadSettings()
 {
-    for (int i = 0; i < mModel.columnCount(); i++) {
+    int const cc(model()->columnCount());
+    for (int i = 0; i < cc; i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
-        setColumnWidth(i, qMax(20, mSettings->value(temp, 800 / mModel.columnCount()).toInt()));
+        setColumnWidth(i, qMax(20, mSettings->value(temp, 800 / cc).toInt()));
     }
 
     mSaveFullPath = mSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool();
@@ -393,7 +405,7 @@ void ResultsTree::loadSettings()
 
 void ResultsTree::saveSettings() const
 {
-    for (int i = 0; i < mModel.columnCount(); i++) {
+    for (int i = 0; i < model()->columnCount(); ++i) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
         mSettings->setValue(temp, columnWidth(i));
     }
@@ -429,9 +441,12 @@ void ResultsTree::showHiddenResults()
 {
     //Clear the "hide" flag for each item
     mHiddenMessageId.clear();
-    int filecount = mModel.rowCount();
+
+//     auto const & m(* static_cast<analysis::results_model const *>(model()));
+    auto const & m(* qobject_cast<QStandardItemModel const *>(model()));
+    int filecount(m.rowCount());
     for (int i = 0; i < filecount; i++) {
-        QStandardItem *fileItem = mModel.item(i, 0);
+        auto fileItem(m.item(i));
         if (!fileItem)
             continue;
 
@@ -458,11 +473,12 @@ void ResultsTree::refreshTree()
 {
     mVisibleErrors = false;
     //Get the amount of files in the tree
-    int filecount = mModel.rowCount();
+//     auto const & m(* static_cast<analysis::results_model const *>(model()));
+    auto const & m(* qobject_cast<QStandardItemModel const *>(model()));
+    int filecount = m.rowCount();
 
     for (int i = 0; i < filecount; i++) {
-        //Get file i
-        QStandardItem *fileItem = mModel.item(i, 0);
+        auto fileItem(m.item(i));
         if (!fileItem) {
             continue;
         }
@@ -550,10 +566,11 @@ QStandardItem *ResultsTree::ensureFileItem(const QString &fullpath, const QStrin
     data["file"] = fullpath;
     data["file0"] = file0;
     item->setData(QVariant(data));
-    mModel.appendRow(item);
 
-    setRowHidden(mModel.rowCount() - 1, QModelIndex(), hide);
-
+//     auto & m(* static_cast<analysis::results_model *>(model()));
+    auto & m(* qobject_cast<QStandardItemModel *>(model()));
+    m.appendRow(item);
+    setRowHidden(m.rowCount() - 1, QModelIndex(), hide);
     return item;
 }
 
@@ -566,7 +583,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mSelectionModel->selectedRows().count() > 1)
             multipleSelection = true;
 
-        mContextItem = mModel.itemFromIndex(index);
+//         auto & m(* static_cast<analysis::results_model const *>(model()));
+        auto & m(* qobject_cast<QStandardItemModel const *>(model()));
+        mContextItem = m.itemFromIndex(index);
 
         //Create a new context menu
         QMenu menu(this);
@@ -669,7 +688,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         menu.exec(e->globalPos());
         index = indexAt(e->pos());
         if (index.isValid()) {
-            mContextItem = mModel.itemFromIndex(index);
+            mContextItem = m.itemFromIndex(index);
             if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
                 //Disconnect all signals
                 for (int i = 0; i < actions.size(); i++) {
@@ -849,7 +868,9 @@ void ResultsTree::copy()
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QString text;
     foreach (QModelIndex index, selectedRows) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+//         auto m(static_cast<analysis::results_model const *>(model()));
+        auto m(qobject_cast<QStandardItemModel const *>(model()));
+        auto item(m->itemFromIndex(index));
         if (!item->parent())
             continue;
         if (item->parent()->parent())
@@ -879,7 +900,9 @@ void ResultsTree::hideResult()
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     foreach (QModelIndex index, selectedRows) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+//         auto m(static_cast<analysis::results_model const *>(model()));
+        auto m(qobject_cast<QStandardItemModel const *>(model()));
+        auto item(m->itemFromIndex(index));
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();
         data["hide"] = true;
@@ -898,7 +921,9 @@ void ResultsTree::recheckSelectedFiles()
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QStringList selectedItems;
     foreach (QModelIndex index, selectedRows) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+//         auto m(static_cast<analysis::results_model const *>(model()));
+        auto m(qobject_cast<QStandardItemModel const *>(model()));
+        auto item(m->itemFromIndex(index));
         while (item->parent())
             item = item->parent();
         QVariantMap data = item->data().toMap();
@@ -943,10 +968,11 @@ void ResultsTree::hideAllIdResult()
     mHiddenMessageId.append(messageId);
 
     // hide all errors with that message Id
-    int filecount = mModel.rowCount();
+//     auto const & m(* static_cast<analysis::results_model const *>(model()));
+    auto const & m(* qobject_cast<QStandardItemModel const *>(model()));
+    int filecount = m.rowCount();
     for (int i = 0; i < filecount; i++) {
-        //Get file i
-        QStandardItem *file = mModel.item(i, 0);
+        auto file(m.item(i));
         if (!file) {
             continue;
         }
@@ -980,24 +1006,27 @@ void ResultsTree::suppressSelectedIds()
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QSet<QString> selectedIds;
+//     auto const & m(* static_cast<analysis::results_model const *>(model()));
+    auto const & m(* qobject_cast<QStandardItemModel const *>(model()));
     foreach (QModelIndex index, selectedRows) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        auto item(m.itemFromIndex(index));
         if (!item->parent())
             continue;
         if (item->parent()->parent())
             item = item->parent();
-        QVariantMap data = item->data().toMap();
+
+        auto data(item->data().toMap());
         if (!data.contains("id"))
             continue;
         selectedIds << data["id"].toString();
     }
 
     // delete all errors with selected message Ids
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        QStandardItem * const file = mModel.item(i, 0);
+    for (int i = 0; i < m.rowCount(); ++i) {
+        auto const file(m.item(i));
         for (int j = 0; j < file->rowCount();) {
-            QStandardItem *errorItem = file->child(j, 0);
-            QVariantMap userdata = errorItem->data().toMap();
+            auto error_item(file->child(j));
+            auto userdata(error_item->data().toMap());
             if (selectedIds.contains(userdata["id"].toString())) {
                 file->removeRow(j);
             } else {
@@ -1023,10 +1052,13 @@ void ResultsTree::tagSelectedItems(const QString &tag)
 {
     if (!mSelectionModel)
         return;
+
+//     auto m(static_cast<analysis::results_model const *>(model()));
+    auto m(qobject_cast<QStandardItemModel const *>(model()));
     bool isTagged = false;
     foreach (QModelIndex index, mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
-        QVariantMap data = item->data().toMap();
+        auto item(m->itemFromIndex(index));
+        auto data(item->data().toMap());
         if (data.contains("tags")) {
             data["tags"] = tag;
             item->setData(QVariant(data));
@@ -1045,7 +1077,9 @@ void ResultsTree::context(int application)
 
 void ResultsTree::quickStartApplication(const QModelIndex &index)
 {
-    startApplication(mModel.itemFromIndex(index));
+//     auto m(static_cast<analysis::results_model const *>(model()));
+    auto m(qobject_cast<QStandardItemModel const *>(model()));
+    startApplication(m->itemFromIndex(index));
 }
 
 QString ResultsTree::getFilePath(QStandardItem *target, bool fullPath)
@@ -1092,51 +1126,82 @@ QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
     }
 }
 
+#ifdef USE_ANALYSIS_RESULTS_MODEL
+static bool is_file_visible(ResultsTree const & rt, int index)
+{
+    return !rt.isRowHidden(index, QModelIndex());
+}
+
+static bool is_error_item_visible(ResultsTree const & rt, int index, QModelIndex const & parent)
+{
+    return !rt.isRowHidden(index, parent);
+}
+
+struct display_checks
+{
+    bool operator() (ResultsTree const & rt, int index) const
+    { return is_file_visible(rt, index); }
+
+    bool operator() (ResultsTree const & rt, int index, QModelIndex const & parent) const
+    { return is_error_item_visible(rt, index, parent); }
+};
+#endif
+
 void ResultsTree::saveResults(Report *report) const
 {
     report->writeHeader();
 
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        if (mSaveAllErrors || !isRowHidden(i, QModelIndex()))
-            saveErrors(report, mModel.item(i, 0));
+#ifdef USE_ANALYSIS_RESULTS_MODEL
+    auto const & rm(* static_cast<analysis::results_model const *>(model()));
+    if (mSaveAllErrors) {
+        rm.output(*report);
+    } else {
+        display_checks const dc;
+        analysis::results_model::checks_base<ResultsTree const, display_checks> const cb(*this, dc);
+        rm.output_unhidden_records(*report, cb);
     }
+#else
+    auto const & m(* static_cast<QStandardItemModel const *>(model()));
+    for (int i = 0; i < m.rowCount(); ++i) {
+        if (mSaveAllErrors || !isRowHidden(i, QModelIndex()))
+            saveErrors(*report, m.item(i));
+    }
+#endif
 
     report->writeFooter();
 }
 
-void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
+#ifndef USE_ANALYSIS_RESULTS_MODEL
+void ResultsTree::saveErrors(Report& report, QStandardItem const * fileItem) const
 {
     if (!fileItem) {
         return;
     }
 
     for (int i = 0; i < fileItem->rowCount(); i++) {
-        const QStandardItem *error = fileItem->child(i, 0);
+        auto const * error(fileItem->child(i));
 
-        if (!error) {
+        if (!error
+           || (isRowHidden(i, fileItem->index()) && !mSaveAllErrors))
             continue;
-        }
-
-        if (isRowHidden(i, fileItem->index()) && !mSaveAllErrors) {
-            continue;
-        }
 
         ErrorItem item;
         readErrorItem(error, &item);
-
-        report->writeError(item);
+        report.writeError(item);
     }
 }
+#endif
 
 static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 {
     for (int i = 0; i < list.size(); i++) {
-        if (list[i].errorId == item.errorId &&
-            list[i].errorPath == item.errorPath &&
-            list[i].file0 == item.file0 &&
-            list[i].message == item.message &&
-            list[i].inconclusive == item.inconclusive &&
-            list[i].severity == item.severity) {
+        auto const & ei(list[i]);
+        if (ei.errorId == item.errorId &&
+            ei.errorPath == item.errorPath &&
+            ei.file0 == item.file0 &&
+            ei.message == item.message &&
+            ei.inconclusive == item.inconclusive &&
+            ei.severity == item.severity) {
             return i;
         }
     }
@@ -1152,26 +1217,29 @@ void ResultsTree::updateFromOldReport(const QString &filename)
         oldReport.close();
     }
 
+//     auto & m(* static_cast<analysis::results_model *>(model()));
+    auto & m(* qobject_cast<QStandardItemModel*>(model()));
+
     // Read current results..
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        QStandardItem *fileItem = mModel.item(i,0);
-        for (int j = 0; j < fileItem->rowCount(); j++) {
-            QStandardItem *error = fileItem->child(j,0);
+    for (int i = 0; i < m.rowCount(); ++i) {
+        auto file(m.item(i));
+        for (int j = 0; j < file->rowCount(); ++j) {
+            auto error(file->child(j));
             ErrorItem errorItem;
             readErrorItem(error, &errorItem);
-            int oldErrorIndex = indexOf(oldErrors, errorItem);
-            QVariantMap data = error->data().toMap();
+            int oldErrorIndex(indexOf(oldErrors, errorItem));
+            auto data(error->data().toMap());
 
             // New error .. set the "sinceDate" property
             if (oldErrorIndex >= 0 && !oldErrors[oldErrorIndex].sinceDate.isEmpty()) {
                 data["sinceDate"] = oldErrors[oldErrorIndex].sinceDate;
                 error->setData(data);
-                fileItem->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
+                file->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
             } else if (oldErrorIndex < 0 || data["sinceDate"].toString().isEmpty()) {
                 const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
                 data["sinceDate"] = sinceDate;
                 error->setData(data);
-                fileItem->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);
+                file->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);
                 if (oldErrorIndex < 0)
                     continue;
             }
@@ -1324,10 +1392,12 @@ void ResultsTree::refreshFilePaths(QStandardItem *item)
 void ResultsTree::refreshFilePaths()
 {
     qDebug("Refreshing file paths");
+//     auto m(static_cast<analysis::results_model *>(model()));
+    auto m(qobject_cast<QStandardItemModel*>(model()));
 
     //Go through all file items (these are parent items that contain the errors)
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        refreshFilePaths(mModel.item(i, 0));
+    for (int i = 0; i < m->rowCount(); ++i) {
+        refreshFilePaths(m->item(i));
     }
 }
 
@@ -1338,14 +1408,16 @@ bool ResultsTree::hasVisibleResults() const
 
 bool ResultsTree::hasResults() const
 {
-    return mModel.rowCount() > 0;
+    return model()->rowCount() > 0;
 }
 
 void ResultsTree::translate()
 {
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Inconclusive") << tr("Summary") << tr("Since date") << tr("Tag");
-    mModel.setHorizontalHeaderLabels(labels);
+//    auto m(static_cast<analysis::results_model *>(model()));
+    auto m(qobject_cast<QStandardItemModel*>(model()));
+    m->setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
 }
 

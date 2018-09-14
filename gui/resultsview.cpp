@@ -32,15 +32,21 @@
 #include <QClipboard>
 #include "resultsview.h"
 #include "common.h"
-#include "erroritem.h"
 #include "txtreport.h"
-#include "xmlreport.h"
 #include "xmlreportv2.h"
 #include "csvreport.h"
 #include "printablereport.h"
 #include "applicationlist.h"
 #include "checkstatistics.h"
 #include "path.h"
+#include "analysis_results_model.h"
+#include "app.h"
+
+#ifdef USE_CXX_MAKE_UNIQUE
+#include <memory>
+#else
+#include <QScopedPointer>
+#endif
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
@@ -313,53 +319,91 @@ void ResultsView::disableProgressbar()
     mUI.mProgress->setEnabled(false);
 }
 
+static void add_error_item(void const * item, void* tree)
+{
+    auto ei(static_cast<ErrorItem const *>(item));
+    auto rt(static_cast<ResultsTree*>(tree));
+    rt->addErrorItem(*ei);
+}
+
 void ResultsView::readErrorsXml(const QString &filename)
 {
-    const int version = XmlReport::determineVersion(filename);
-    if (version == 0) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Failed to read the report."));
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-        return;
-    }
-    if (version == 1) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("XML format version 1 is no longer supported."));
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-        return;
-    }
+    try
+    {
+#ifdef USE_ANALYSIS_RESULTS_MODEL_FOR_LOADING_FROM_XML_REPORT
+        auto rt(mUI.mTree);
+        analysis::results_model* rm(analysis::read_errors_XML(filename,
+                                                              add_error_item,
+                                                              rt));
+        rt->setModel(rm);
+        auto gui(static_cast<analysis::GUI::application *>(qApp));
+        gui->use_model(rm);
 
-    XmlReport *report = new XmlReportV2(filename);
-
-    QList<ErrorItem> errors;
-    if (report) {
-        if (report->open())
-            errors = report->read();
-        else {
-            QMessageBox msgBox;
-            msgBox.setText(tr("Failed to read the report."));
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.exec();
+        QString dir;
+        if (rm->first_error_path_contains_data()) {
+            QString path(QFileInfo(filename).canonicalPath());
+            QString file(path);
+            file.append('/').append(rm->get_file_from_first_error_path());
+            if (QFileInfo(file).exists())
+                dir = path;
         }
-        delete report;
-        report = NULL;
-    }
 
-    ErrorItem item;
-    foreach (item, errors) {
-        mUI.mTree->addErrorItem(item);
-    }
+        rt->setCheckDirectory(dir);
+#else
+        int const version(XmlReport::determineVersion(filename));
+        switch (version)
+        {
+        case 0:
+            throw analysis::report_read_failure();
 
-    QString dir;
-    if (!errors.isEmpty() && !errors[0].errorPath.isEmpty()) {
-        QString relativePath = QFileInfo(filename).canonicalPath();
-        if (QFileInfo(relativePath + '/' + errors[0].errorPath[0].file).exists())
-            dir = relativePath;
-    }
+        case 1:
+            throw analysis::unsupported_report_format_version();
 
-    mUI.mTree->setCheckDirectory(dir);
+        default:
+            {
+#ifdef USE_CXX_MAKE_UNIQUE
+                auto report = std::make_unique<XmlReportV2>(filename);
+#else
+                QScopedPointer<XmlReportV2> report(new XmlReportV2(filename));
+#endif
+                if (!report->open())
+                    throw analysis::report_read_failure();
+
+                auto errors(report->read());
+                auto rt(mUI.mTree);
+                ErrorItem item;
+                foreach (item, errors) {
+                    rt->addErrorItem(item);
+                }
+
+                QString dir;
+                if (!errors.isEmpty() && !errors[0].errorPath.isEmpty()) {
+                    QString path(QFileInfo(filename).canonicalPath());
+                    QString file(path);
+                    file.append('/').append(errors[0].errorPath[0].file);
+                    if (QFileInfo(file).exists())
+                        dir = path;
+                }
+
+                rt->setCheckDirectory(dir);
+            }
+        }
+#endif
+    }
+    catch (std::exception const & e)
+    {
+        QMessageBox mb(this);
+        mb.setText(e.what());
+        mb.setIcon(QMessageBox::Critical);
+        mb.exec();
+    }
+    catch (...)
+    {
+        QMessageBox mb(this);
+        mb.setText(tr("An unknown exception was caught."));
+        mb.setIcon(QMessageBox::Critical);
+        mb.exec();
+    }
 }
 
 void ResultsView::updateDetails(const QModelIndex &index)
